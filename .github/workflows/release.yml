@@ -1,0 +1,54 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '8.0.x' }
+      - name: Publish (GUI + CLI)
+        shell: pwsh
+        run: |
+          $v = "${{ github.ref_name }}".TrimStart('v')
+          dotnet publish src/CPPAN/CPPAN.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:Version=$v -o out
+          dotnet publish src/CPPAN.Cli/CPPAN.Cli.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:Version=$v -o out
+          Compress-Archive -Path out/* -DestinationPath CPPAN-win-x64.zip
+      - uses: actions/upload-artifact@v4
+        with: { name: win, path: CPPAN-win-x64.zip }
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '8.0.x' }
+      - name: Publish (CLI)
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          dotnet publish src/CPPAN.Cli/CPPAN.Cli.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -p:Version=$v -o outl
+          mv outl/cppan-cli outl/cppan
+          tar -czf CPPAN-linux-x64.tar.gz -C outl .
+      - uses: actions/upload-artifact@v4
+        with: { name: linux, path: CPPAN-linux-x64.tar.gz }
+  release:
+    needs: [windows, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: dl, merge-multiple: true }
+      - name: Release notes for this version only
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          tr -d '\r' < CHANGELOG.md | awk -v h="## CPPAN $v" '$0==h{f=1;next} /^## CPPAN /{f=0} f' > notes.md
+          [ -s notes.md ] || echo "See CHANGELOG.md" > notes.md
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dl/CPPAN-win-x64.zip
+            dl/CPPAN-linux-x64.tar.gz
+          body_path: notes.md
