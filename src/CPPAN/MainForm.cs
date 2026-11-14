@@ -178,7 +178,7 @@ public class MainForm : Form
             var l = m.Latest!; installed.TryGetValue(m.Id, out var im);
             bool chk = pending.TryGetValue(m.Id, out var pv) ? pv : im != null;
             int i = grid.Rows.Add(chk, (m.Removed ? "[archived] " : "") + m.Name, m.Author, im?.Version ?? "", l.Version, l.MinGameVersion,
-                Size(l.Size), l.Released.ToString("dd/MM/yyyy"), im?.InstalledOn.ToString("dd/MM/yyyy") ?? "", m.Abstract);
+                FmtSize(l.Size), l.Released.ToString("dd/MM/yyyy"), im?.InstalledOn.ToString("dd/MM/yyyy") ?? "", m.Abstract);
             var row = grid.Rows[i]; row.Tag = m;
             if (m.Id == Config.CoreId) { row.Cells[0].ReadOnly = true; row.DefaultCellStyle.Font = new Font(grid.Font, FontStyle.Bold); }
             if (Updatable(m)) row.DefaultCellStyle.BackColor = Color.FromArgb(255, 250, 205);
@@ -188,7 +188,7 @@ public class MainForm : Form
         ShowDetails();
     }
 
-    static string Size(long b) => b >= 1 << 20 ? $"{b / 1048576.0:0.0} MiB" : b >= 1024 ? $"{b / 1024.0:0.0} KiB" : $"{b} B";
+    static string FmtSize(long b) => b >= 1 << 20 ? $"{b / 1048576.0:0.0} MiB" : b >= 1024 ? $"{b / 1024.0:0.0} KiB" : $"{b} B";
 
     void OnCellClick(object? s, DataGridViewCellEventArgs e)
     {
@@ -214,7 +214,7 @@ public class MainForm : Form
         tab["Relationships"].Text = $"Depends:\r\n  {string.Join("\r\n  ", m.Depends)}\r\n\r\nRecommends:\r\n  {string.Join("\r\n  ", m.Recommends)}\r\n\r\nConflicts:\r\n  {string.Join("\r\n  ", m.Conflicts)}";
         tab["Contents"].Text = im == null ? "Install this mod to see its files." : string.Join("\r\n", im.Files);
         tab["Versions"].Text = string.Join("\r\n\r\n", m.Versions.OrderByDescending(v => v.Version, Comparer<string>.Create(Ver.Cmp))
-            .Select(v => $"{v.Version}   ({v.Released:dd/MM/yyyy}, {Size(v.Size)}, needs game >= {(v.MinGameVersion == "" ? "any" : v.MinGameVersion)})\r\n{v.Changelog}"));
+            .Select(v => $"{v.Version}   ({v.Released:dd/MM/yyyy}, {FmtSize(v.Size)}, needs game >= {(v.MinGameVersion == "" ? "any" : v.MinGameVersion)})\r\n{v.Changelog}"));
     }
 
     // ================= actions =================
