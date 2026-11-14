@@ -1,0 +1,23 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '8.0.x' }
+      - name: Publish
+        shell: pwsh
+        run: |
+          $v = "${{ github.ref_name }}".TrimStart('v')
+          dotnet publish src/CPPAN/CPPAN.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:Version=$v -o out
+          Compress-Archive -Path out/* -DestinationPath CPPAN-win-x64.zip
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: CPPAN-win-x64.zip
+          generate_release_notes: true

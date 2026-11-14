@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "blockedHashes": [],
+  "mods": [
+    {
+      "id": "people-api",
+      "name": "People API",
+      "author": "YOUR_NAME",
+      "abstract": "Required core. Connects mods to the game and to each other: items, people, addons, anything custom.",
+      "license": "MIT",
+      "homepage": "https://github.com/YOUR_GITHUB_USERNAME/CPPAN-meta",
+      "tags": ["core", "library"],
+      "versions": [
+        {
+          "version": "1.0.0",
+          "minGameVersion": "",
+          "urls": ["https://github.com/YOUR_GITHUB_USERNAME/CPPAN-meta/releases/download/people-api-1.0.0/people-api-1.0.0.zip"],
+          "sha256": "FILL_IN_AFTER_UPLOAD",
+          "size": 0,
+          "released": "2026-11-14T00:00:00Z",
+          "changelog": "Initial release."
+        }
+      ]
+    }
+  ]
+}
